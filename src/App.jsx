@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot } from 'firebase/firestore';
@@ -106,13 +106,17 @@ export default function App() {
   const [viaOfficeComp, setViaOfficeComp] = useState(false);
   const [viaOfficeAgent, setViaOfficeAgent] = useState(false);
 
-  // Search States
+  // Search States and Refs
   const [searchTerms, setSearchTerms] = useState({
     installment: '',
     agent: '',
     company: '',
     office: ''
   });
+  const installmentSelectRef = useRef(null);
+  const agentSelectRef = useRef(null);
+  const companySelectRef = useRef(null);
+  const officeSelectRef = useRef(null);
   
   // Login States
   const [loginForm, setLoginForm] = useState({ user: '', pass: '' });
@@ -710,7 +714,7 @@ export default function App() {
       <div style="font-size: 14.5px; font-weight: bold; line-height: 1.8; color: #0f172a; text-align: justify; margin-bottom: 20px; padding: 15px 20px; background: #ecfdf5; border-radius: 12px; border: 2px solid #a7f3d0;">
         <ol style="margin: 0; padding-right: 20px;">
           <li style="margin-bottom: 10px;">هەرکات لایەنی دووەم (<span style="color:#10b981">${s.customerName}</span>) پێویستی بە کارتی نیشتمانی هەبوو کە پێشتر وەک بارمتەیەک لای لایەنی یەکەم (<span style="color:#064e3b">${STORE_NAME}</span>) داینابوو تەنها مۆڵەتی شۆفێری لەبری وەردەگیرێت بە مەرجێک ماوەکەی بەسەرنەچوبێت یان ئەو بڕە پارەیەی لە قیستەکە ماوە وەک ئەمانەتێک دەبێت بیدات بە لایەنی یەکەم تا ئەو کاتەی دووبارە کارتی نیشتمانی دەگێڕێتەوە.</li>
-          <li style="margin-bottom: 10px;">لایەنی دووەم بەڵێن دەدات کە پابەند بێت بە گەڕاندنەوەی قیستەکانی لە ماوەی دیاریکراوی خۆیدا هەر ٣٠ ڕۆژ جارێک بێ دواکەوتن ، نەدانی مووچە و দত্তکەوتنی مووچە و لێبڕینی مووچە و لاوازی بازاڕ یاخوود هەر هۆکارێکی دیکە نەکاتە بەهانە بۆ دواخستنی قیستەکانی.</li>
+          <li style="margin-bottom: 10px;">لایەنی دووەم بەڵێن دەدات کە پابەند بێت بە گەڕاندنەوەی قیستەکانی لە ماوەی دیاریکراوی خۆیدا هەر ٣٠ ڕۆژ جارێک بێ دواکەوتن ، نەدانی مووچە و دواکەوتنی مووچە و لێبڕینی مووچە و لاوازی بازاڕ یاخوود هەر هۆکارێکی دیکە نەکاتە بەهانە بۆ دواخستنی قیستەکانی.</li>
           <li style="margin-bottom: 10px;">لایەنی دووەم ئامێری ئاماژەپێکراوی (<span style="color:#064e3b">${itemNames}</span>) بێ هیچ کەم و کوڕییەک وەرگرت.</li>
           <li style="margin-bottom: 10px;">پێویستە لایەنی دووەم (<span style="color:#10b981">${s.customerName}</span>) کۆپی کارتی نیشتمانی و کارتی زانیاری بدات بە لایەنی یەکەم (<span style="color:#064e3b">${STORE_NAME}</span>) وە پێویستە وەک بارمتەیەک لایەنی دووەم (<span style="color:#10b981">${s.customerName}</span>) کارتی نیشتمانی اصلى بدات بە لایەنی یەکەم (<span style="color:#064e3b">${STORE_NAME}</span>) تا کۆتایی هاتنی ماوەی قیستەکە و پاکتاوکردنی هەژمارەکەی.</li>
           <li style="margin-bottom: 10px;">هەرکات لایەنی دووەم (<span style="color:#10b981">${s.customerName}</span>) ویستی بە هەر هۆکارێک ئەم گرێبەستە هەڵبووەشێنێتەوە ئەوا لایەنی یەکەم (<span style="color:#064e3b">${STORE_NAME}</span>) بە مافی خۆی دەزانێت کە بڕی پێشەکی وەرگیراو نەگەڕێنێتەوە بۆ لایەنی دووەم (<span style="color:#10b981">${s.customerName}</span>) وە کاڵای گەڕاوە بە نرخی ڕۆژ خەمڵاندنی بۆ دەکرێت و دەدرێت بە لایەنی دووەم (<span style="color:#10b981">${s.customerName}</span>).</li>
@@ -938,6 +942,34 @@ export default function App() {
     e.target.reset();
   };
 
+  // Function to dynamically trigger select open state when searching
+  const handleSearchChange = (type, value) => {
+    setSearchTerms({ ...searchTerms, [type]: value });
+    if (value.trim() !== '') {
+       if (type === 'installment' && installmentSelectRef.current) {
+          installmentSelectRef.current.size = 5; 
+       }
+       if (type === 'agent' && agentSelectRef.current) {
+          agentSelectRef.current.size = 5;
+       }
+       if (type === 'company' && companySelectRef.current) {
+          companySelectRef.current.size = 5;
+       }
+       if (type === 'office' && officeSelectRef.current) {
+          officeSelectRef.current.size = 5;
+       }
+    } else {
+       if (type === 'installment' && installmentSelectRef.current) installmentSelectRef.current.size = 1;
+       if (type === 'agent' && agentSelectRef.current) agentSelectRef.current.size = 1;
+       if (type === 'company' && companySelectRef.current) companySelectRef.current.size = 1;
+       if (type === 'office' && officeSelectRef.current) officeSelectRef.current.size = 1;
+    }
+  };
+
+  const handleSelectChange = (e, ref) => {
+      if(ref.current) ref.current.size = 1;
+  };
+
   // --- View Renderers ---
   const renderDashboard = () => {
     const totalSales = sales.reduce((acc, s) => acc + s.price, 0);
@@ -1092,7 +1124,7 @@ export default function App() {
             <tbody>
               {agents.map(a => {
                 const debt = getAgentDebt(a.id);
-                return (<tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50"><td className="p-3 md:p-4 font-medium">{a.name}</td><td className="p-3 md:p-4">{a.phone}</td><td className="p-3 md:p-4">{a.address}</td><td className="p-3 md:p-4 font-bold text-orange-600">${debt.toFixed(2)}</td><td className="p-3 md:p-4 flex gap-2"><button onClick={() => setEditingId(a.id)} className="text-emerald-900 bg-emerald-100 p-2 rounded-full hover:bg-emerald-200"><IconEdit /></button><button onClick={() => deleteAgent(a.id)} className="text-rose-600 bg-rose-100 p-2 rounded-full hover:bg-rose-200"><IconTrash /></button></td></tr>)
+                return (<tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50"><td className="p-3 md:p-4 font-medium">{a.name}</td><td className="p-3 md:p-4">{a.phone}</td><td className="p-3 md:p-4">{a.address}</td><td className="p-3 md:p-4 font-bold text-black">${debt.toFixed(2)}</td><td className="p-3 md:p-4 flex gap-2"><button onClick={() => setEditingId(a.id)} className="text-emerald-900 bg-emerald-100 p-2 rounded-full hover:bg-emerald-200"><IconEdit /></button><button onClick={() => deleteAgent(a.id)} className="text-rose-600 bg-rose-100 p-2 rounded-full hover:bg-rose-200"><IconTrash /></button></td></tr>)
               })}
             </tbody>
           </table>
@@ -1484,10 +1516,10 @@ export default function App() {
             <h3 className="font-bold text-emerald-900 mb-4 flex items-center gap-2"><IconDollarSign/> {isEditingReceiveInst ? 'دەستکاری قیست' : 'وەرگرتنی قیست'}</h3>
             <div className="mb-3 relative">
                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400"><IconSearch /></div>
-               <input type="text" placeholder="گەڕان بۆ کڕیار، مۆبایل، پسوڵە" value={searchTerms.installment} onChange={(e) => setSearchTerms({...searchTerms, installment: e.target.value})} className="w-full border border-slate-300 p-2 pr-10 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+               <input type="text" placeholder="گەڕان بۆ کڕیار، مۆبایل، پسوڵە" value={searchTerms.installment} onChange={(e) => handleSearchChange('installment', e.target.value)} className="w-full border border-slate-300 p-2 pr-10 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
             </div>
             <form key={`ri-${editingPaymentId || 'new'}`} onSubmit={e => handlePaymentSubmit(e, 'installment')} className="space-y-4 flex-1 flex flex-col">
-              <select required name="refId" defaultValue={isEditingReceiveInst ? pToEdit?.refId : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900">
+              <select ref={installmentSelectRef} onChange={(e) => handleSelectChange(e, installmentSelectRef)} required name="refId" defaultValue={isEditingReceiveInst ? pToEdit?.refId : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900 overflow-y-auto">
                 <option value="">کڕیار هەڵبژێرە...</option>
                 {(isEditingReceiveInst ? sales.filter(s=>s.saleType==='installment') : filteredActiveSales).map(s => <option key={s.id} value={s.id}>{s.customerName} - {s.receiptNo} (ماوە: ${(s.price - getSalePaidAmount(s.id)).toFixed(2)})</option>)}
               </select>
@@ -1502,14 +1534,14 @@ export default function App() {
             <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><IconAgent/> {isEditingAgent ? 'دەستکاری پارەی بریکار' : 'مامەڵەی بریکارەکان'}</h3>
             <div className="mb-3 relative">
                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400"><IconSearch /></div>
-               <input type="text" placeholder="گەڕان بۆ ناوی بریکار یان مۆبایل" value={searchTerms.agent} onChange={(e) => setSearchTerms({...searchTerms, agent: e.target.value})} className="w-full border border-slate-300 p-2 pr-10 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 outline-none" />
+               <input type="text" placeholder="گەڕان بۆ ناوی بریکار یان مۆبایل" value={searchTerms.agent} onChange={(e) => handleSearchChange('agent', e.target.value)} className="w-full border border-slate-300 p-2 pr-10 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 outline-none" />
             </div>
             <form key={`ra-${editingPaymentId || 'new'}`} onSubmit={e => handlePaymentSubmit(e, 'agent')} className="space-y-4 flex-1 flex flex-col">
               <select required name="txDirection" value={agentTxDir} onChange={e=>setAgentTxDir(e.target.value)} className="w-full border border-slate-300 p-2.5 rounded-lg bg-emerald-50 font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-900">
                  <option value="receive">وەرگرتنی پارە (لە بریکار)</option>
                  <option value="pay">پێدانی پارە (بە بریکار)</option>
               </select>
-              <select required name="refId" defaultValue={isEditingAgent ? pToEdit?.refId : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900">
+              <select ref={agentSelectRef} onChange={(e) => handleSelectChange(e, agentSelectRef)} required name="refId" defaultValue={isEditingAgent ? pToEdit?.refId : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900 overflow-y-auto">
                 <option value="">ناوی بریکار...</option>
                 {filteredAgents.map(a => <option key={a.id} value={a.id}>{a.name} (حساب: ${getAgentDebt(a.id).toFixed(2)})</option>)}
               </select>
@@ -1540,14 +1572,14 @@ export default function App() {
             <h3 className="font-bold text-black mb-4 flex items-center gap-2"><IconBuilding/> {isEditingCompany ? 'دەستکاری پارەی کۆمپانیا' : 'مامەڵەی کۆمپانیاکان'}</h3>
             <div className="mb-3 relative">
                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400"><IconSearch /></div>
-               <input type="text" placeholder="گەڕان بۆ ناوی کۆمپانیا یان مۆبایل" value={searchTerms.company} onChange={(e) => setSearchTerms({...searchTerms, company: e.target.value})} className="w-full border border-slate-300 p-2 pr-10 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none" />
+               <input type="text" placeholder="گەڕان بۆ ناوی کۆمپانیا یان مۆبایل" value={searchTerms.company} onChange={(e) => handleSearchChange('company', e.target.value)} className="w-full border border-slate-300 p-2 pr-10 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none" />
             </div>
             <form key={`pay-${editingPaymentId || 'new'}`} onSubmit={e => handlePaymentSubmit(e, 'company')} className="space-y-4 flex-1 flex flex-col">
               <select required name="txDirection" value={compTxDir} onChange={e=>setCompTxDir(e.target.value)} className="w-full border border-slate-300 p-2.5 rounded-lg bg-emerald-50 font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-900">
                  <option value="pay">پێدانی پارە (بە کۆمپانیا)</option>
                  <option value="receive">وەرگرتنی پارە (لە کۆمپانیا)</option>
               </select>
-              <select required name="refId" defaultValue={isEditingCompany ? pToEdit?.refId : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900">
+              <select ref={companySelectRef} onChange={(e) => handleSelectChange(e, companySelectRef)} required name="refId" defaultValue={isEditingCompany ? pToEdit?.refId : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900 overflow-y-auto">
                 <option value="">کۆمپانیا هەڵبژێرە...</option>
                 {filteredCompanies.map(c => <option key={c.id} value={c.id}>{c.name} (حساب: $${getCompanyDebt(c.id).toFixed(2)})</option>)}
               </select>
@@ -1578,14 +1610,14 @@ export default function App() {
             <h3 className="font-bold text-emerald-900 mb-4 flex items-center gap-2"><IconOffice/> {isEditingOffice ? 'دەستکاری پارەی نوسینگە' : 'مامەڵەی نوسینگەکان'}</h3>
             <div className="mb-3 relative">
                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400"><IconSearch /></div>
-               <input type="text" placeholder="گەڕان بۆ ناوی نوسینگە یان مۆبایل" value={searchTerms.office} onChange={(e) => setSearchTerms({...searchTerms, office: e.target.value})} className="w-full border border-slate-300 p-2 pr-10 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+               <input type="text" placeholder="گەڕان بۆ ناوی نوسینگە یان مۆبایل" value={searchTerms.office} onChange={(e) => handleSearchChange('office', e.target.value)} className="w-full border border-slate-300 p-2 pr-10 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
             </div>
             <form key={`off-${editingPaymentId || 'new'}`} onSubmit={e => handlePaymentSubmit(e, 'office')} className="space-y-4 flex-1 flex flex-col">
               <select required name="txDirection" defaultValue={isEditingOffice ? (pToEdit.type === 'pay_office_debt' ? 'pay' : 'receive') : 'receive'} className="w-full border border-slate-300 p-2.5 rounded-lg bg-emerald-50 font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-900">
                  <option value="receive">وەرگرتنی پارە (لە نوسینگە)</option>
                  <option value="pay">پێدانی پارە (بە نوسینگە)</option>
               </select>
-              <select required name="refId" defaultValue={isEditingOffice ? pToEdit?.refId : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900">
+              <select ref={officeSelectRef} onChange={(e) => handleSelectChange(e, officeSelectRef)} required name="refId" defaultValue={isEditingOffice ? pToEdit?.refId : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900 overflow-y-auto">
                 <option value="">نوسینگە هەڵبژێرە...</option>
                 {filteredOffices.map(o => <option key={o.id} value={o.id}>{o.name} (حساب: $${getOfficeDebt(o.id).toFixed(2)})</option>)}
               </select>
@@ -2054,7 +2086,7 @@ export default function App() {
             <div id="tbl-item-perf" className="overflow-x-auto">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 min-w-[600px]">
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200"><p className="text-sm text-slate-500 mb-1">کۆی فرۆشراو (دانە)</p><h3 className="text-xl md:text-2xl font-bold text-slate-800">{itemPerf.tQty}</h3></div>
-                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200"><p className="text-sm text-emerald-800 mb-1">کۆی داهاتی فرۆشتن</p><h3 className="text-xl md:text-2xl font-bold text-blue-600">${itemPerf.tSales.toFixed(2)}</h3></div>
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-200"><p className="text-sm text-blue-800 mb-1">کۆی داهاتی فرۆشتن</p><h3 className="text-xl md:text-2xl font-bold text-blue-600">${itemPerf.tSales.toFixed(2)}</h3></div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200"><p className="text-sm text-slate-500 mb-1">کۆی تێچووی کاڵاکان</p><h3 className="text-xl md:text-2xl font-bold text-slate-800">${itemPerf.tCost.toFixed(2)}</h3></div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200"><p className="text-sm text-slate-500 mb-1">پوختەی قازانج</p><h3 className={`text-xl md:text-2xl font-bold ${itemPerf.tProfit >= 0 ? 'text-blue-600' : 'text-slate-900'}`}>${itemPerf.tProfit.toFixed(2)}</h3></div>
               </div>
@@ -2111,10 +2143,10 @@ export default function App() {
         {reportTab === 'agents_all' && (
           <div className="bg-white rounded-xl shadow-sm p-4 border border-slate-200 overflow-x-auto">
             <button onClick={() => printTable('حسابی گشتی بریکارەکان', 'tbl-agents')} className="mb-4 bg-slate-100 px-4 py-2 rounded-lg flex gap-2 font-medium"><IconPrinter/> چاپکردن</button>
-            <table id="tbl-agents" className="w-full text-right border border-emerald-200 min-w-[600px]">
-              <thead className="bg-emerald-50 text-emerald-900"><tr><th className="p-3 border border-emerald-200">ناوی بریکار</th><th className="p-3 border border-emerald-200">مۆبایل</th><th className="p-3 border border-emerald-200">ناونیشان</th><th className="p-3 border border-emerald-200">کۆی قەرزی لایە</th></tr></thead>
+            <table id="tbl-agents" className="w-full text-right border border-blue-200 min-w-[600px]">
+              <thead className="bg-blue-50 text-blue-900"><tr><th className="p-3 border border-blue-200">ناوی بریکار</th><th className="p-3 border border-blue-200">مۆبایل</th><th className="p-3 border border-blue-200">ناونیشان</th><th className="p-3 border border-blue-200">کۆی قەرزی لایە</th></tr></thead>
               <tbody>
-                {agentsStatus.map(a => (<tr key={a.id} className="border-b border-emerald-100"><td className="p-3 border border-emerald-200 font-semibold">{a.name}</td><td className="p-3 border border-emerald-200">{a.phone}</td><td className="p-3 border border-emerald-200">${a.address}</td><td className="p-3 border border-emerald-200 text-orange-600 font-bold bg-orange-50/50">${a.debt.toFixed(2)}</td></tr>))}
+                {agentsStatus.map(a => (<tr key={a.id} className="border-b border-blue-100"><td className="p-3 border border-blue-200 font-semibold">{a.name}</td><td className="p-3 border border-blue-200">{a.phone}</td><td className="p-3 border border-blue-200">${a.address}</td><td className="p-3 border border-blue-200 text-orange-600 font-bold bg-orange-50/50">${a.debt.toFixed(2)}</td></tr>))}
               </tbody>
             </table>
           </div>
@@ -2134,21 +2166,21 @@ export default function App() {
 
         {reportTab === 'statement' && (
           <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-emerald-50 p-4 md:p-5 rounded-xl border border-emerald-100">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-4 md:p-5 rounded-xl border border-blue-100">
                <div>
-                  <label className="block text-sm mb-1 font-bold text-emerald-900">گەڕان (ناو، مۆبایل، ژ.پ)</label>
+                  <label className="block text-sm mb-1 font-bold text-blue-900">گەڕان (ناو، مۆبایل، ژ.پ)</label>
                   <div className="flex gap-2">
                     <input 
                       type="text"
                       value={statementFilter.name} 
                       onChange={e => setStatementFilter({...statementFilter, name: e.target.value})} 
                       placeholder="بگەڕێ..." 
-                      className="flex-1 border border-emerald-200 p-2.5 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-600 outline-none min-w-0"
+                      className="flex-1 border border-blue-200 p-2.5 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-orange-500 outline-none min-w-0"
                     />
                     <select 
                       value="" 
                       onChange={e => { if(e.target.value) setStatementFilter({...statementFilter, name: e.target.value}) }} 
-                      className="w-12 border border-emerald-200 rounded-lg bg-emerald-100 text-emerald-900 focus:ring-2 focus:ring-blue-600 cursor-pointer appearance-none text-center font-bold"
+                      className="w-12 border border-blue-200 rounded-lg bg-blue-100 text-blue-900 focus:ring-2 focus:ring-orange-500 cursor-pointer appearance-none text-center font-bold"
                       title="هەڵبژاردن لە لیستەوە"
                     >
                       <option value="" disabled>▼</option>
@@ -2158,17 +2190,17 @@ export default function App() {
                     </select>
                   </div>
                </div>
-               <div><label className="block text-sm mb-1 font-semibold text-slate-700">لە بەرواری</label><input type="date" value={statementFilter.dateFrom} onChange={e=>setStatementFilter({...statementFilter, dateFrom: e.target.value})} className="w-full border p-2.5 rounded-lg bg-white text-slate-900 outline-none focus:ring-2 focus:ring-blue-600" /></div>
-               <div><label className="block text-sm mb-1 font-semibold text-slate-700">بۆ بەرواری</label><input type="date" value={statementFilter.dateTo} onChange={e=>setStatementFilter({...statementFilter, dateTo: e.target.value})} className="w-full border p-2.5 rounded-lg bg-white text-slate-900 outline-none focus:ring-2 focus:ring-blue-600" /></div>
+               <div><label className="block text-sm mb-1 font-semibold text-slate-700">لە بەرواری</label><input type="date" value={statementFilter.dateFrom} onChange={e=>setStatementFilter({...statementFilter, dateFrom: e.target.value})} className="w-full border p-2.5 rounded-lg bg-white text-slate-900 outline-none focus:ring-2 focus:ring-orange-500" /></div>
+               <div><label className="block text-sm mb-1 font-semibold text-slate-700">بۆ بەرواری</label><input type="date" value={statementFilter.dateTo} onChange={e=>setStatementFilter({...statementFilter, dateTo: e.target.value})} className="w-full border p-2.5 rounded-lg bg-white text-slate-900 outline-none focus:ring-2 focus:ring-orange-500" /></div>
             </div>
             
             {statementResult.isResolved && (
               <div className="overflow-x-auto">
                 <button onClick={() => printTable(`کەشف حسابی: ${statementResult.name}`, 'print-statement-area')} className="mb-4 bg-slate-100 px-4 py-2 rounded-lg flex gap-2 font-medium hover:bg-slate-200 transition-colors"><IconPrinter/> چاپکردن</button>
                 <div id="print-statement-area">
-                  <div className="mb-4 text-center"><h3 className="text-xl font-bold text-slate-800">کەشف حسابی: <span className="text-blue-600">{statementResult.name}</span></h3></div>
+                  <div className="mb-4 text-center"><h3 className="text-xl font-bold text-slate-800">کەشف حسابی: <span className="text-orange-600">{statementResult.name}</span></h3></div>
                   <table className="w-full text-right border border-slate-200 text-sm min-w-[700px]">
-                    <thead className="bg-slate-50"><tr><th className="p-3 border">ژ.پ</th><th className="p-3 border">بەروار</th><th className="p-3 border">جۆر</th><th className="p-3 border">وەسف و کاڵا</th><th className="p-3 border">قەرز (لەسەری)</th><th className="p-3 border">پێدان (پارەی دراو)</th><th className="p-3 border bg-emerald-50">باڵانس (ماوە)</th></tr></thead>
+                    <thead className="bg-slate-50"><tr><th className="p-3 border">ژ.پ</th><th className="p-3 border">بەروار</th><th className="p-3 border">جۆر</th><th className="p-3 border">وەسف و کاڵا</th><th className="p-3 border">قەرز (لەسەری)</th><th className="p-3 border">پێدان (پارەی دراو)</th><th className="p-3 border bg-blue-50">باڵانس (ماوە)</th></tr></thead>
                     <tbody>
                       {statementResult.entries.length === 0 && <tr><td colSpan="7" className="p-4 text-center text-slate-500">هیچ مامەڵەیەک نییە لەم بەروارەدا</td></tr>}
                       {statementResult.entries.map((e, idx) => (
@@ -2177,9 +2209,9 @@ export default function App() {
                           <td className="p-3 border text-slate-500" dir="ltr">{e.date}</td>
                           <td className="p-3 border font-medium">{e.type}</td>
                           <td className="p-3 border">{e.desc} {e.note && <span className="text-slate-400 text-xs mr-2">({e.note})</span>}</td>
-                          <td className="p-3 border font-bold text-rose-600" dir="ltr">{e.debit > 0 ? '$'+e.debit.toFixed(2) : '-'}</td>
+                          <td className="p-3 border font-bold text-slate-900" dir="ltr">{e.debit > 0 ? '$'+e.debit.toFixed(2) : '-'}</td>
                           <td className="p-3 border font-bold text-blue-600" dir="ltr">{e.credit > 0 ? '$'+e.credit.toFixed(2) : '-'}</td>
-                          <td className="p-3 border font-bold bg-emerald-50/50" dir="ltr">${e.balance.toFixed(2)}</td>
+                          <td className="p-3 border font-bold bg-blue-50/50" dir="ltr">${e.balance.toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
