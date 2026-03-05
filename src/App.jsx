@@ -1060,7 +1060,7 @@ export default function App() {
             <tbody>
               {companies.map(c => {
                 const debt = getCompanyDebt(c.id);
-                return (<tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50"><td className="p-3 md:p-4 font-medium">{c.name}</td><td className="p-3 md:p-4">{c.phone}</td><td className="p-3 md:p-4">{c.address}</td><td className="p-3 md:p-4 font-bold" dir="ltr">{debt > 0 ? <span className="text-black">لەسەرمانە: $${debt.toFixed(2)}</span> : debt < 0 ? <span className="text-emerald-700">قەرزارمانن: $${Math.abs(debt).toFixed(2)}</span> : <span className="text-slate-500">$0.00</span>}</td><td className="p-3 md:p-4 flex gap-2"><button onClick={() => setEditingId(c.id)} className="text-emerald-900 bg-emerald-100 hover:bg-emerald-200 p-2 rounded-full"><IconEdit /></button><button onClick={() => deleteCompany(c.id)} className="text-rose-600 bg-rose-100 hover:bg-rose-200 p-2 rounded-full"><IconTrash /></button></td></tr>)
+                return (<tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50"><td className="p-3 md:p-4 font-medium">{c.name}</td><td className="p-3 md:p-4">{c.phone}</td><td className="p-3 md:p-4">{c.address}</td><td className="p-3 md:p-4 font-bold" dir="ltr">{debt > 0 ? <span className="text-rose-600">لەسەرمانە: $${debt.toFixed(2)}</span> : debt < 0 ? <span className="text-emerald-600">قەرزارمانن: $${Math.abs(debt).toFixed(2)}</span> : <span className="text-slate-500">$0.00</span>}</td><td className="p-3 md:p-4 flex gap-2"><button onClick={() => setEditingId(c.id)} className="text-emerald-900 bg-emerald-100 hover:bg-emerald-200 p-2 rounded-full"><IconEdit /></button><button onClick={() => deleteCompany(c.id)} className="text-rose-600 bg-rose-100 hover:bg-rose-200 p-2 rounded-full"><IconTrash /></button></td></tr>)
               })}
             </tbody>
           </table>
@@ -1092,7 +1092,7 @@ export default function App() {
             <tbody>
               {agents.map(a => {
                 const debt = getAgentDebt(a.id);
-                return (<tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50"><td className="p-3 md:p-4 font-medium">{a.name}</td><td className="p-3 md:p-4">{a.phone}</td><td className="p-3 md:p-4">{a.address}</td><td className="p-3 md:p-4 font-bold text-black">${debt.toFixed(2)}</td><td className="p-3 md:p-4 flex gap-2"><button onClick={() => setEditingId(a.id)} className="text-emerald-900 bg-emerald-100 p-2 rounded-full hover:bg-emerald-200"><IconEdit /></button><button onClick={() => deleteAgent(a.id)} className="text-rose-600 bg-rose-100 p-2 rounded-full hover:bg-rose-200"><IconTrash /></button></td></tr>)
+                return (<tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50"><td className="p-3 md:p-4 font-medium">{a.name}</td><td className="p-3 md:p-4">{a.phone}</td><td className="p-3 md:p-4">{a.address}</td><td className="p-3 md:p-4 font-bold text-orange-600">${debt.toFixed(2)}</td><td className="p-3 md:p-4 flex gap-2"><button onClick={() => setEditingId(a.id)} className="text-emerald-900 bg-emerald-100 p-2 rounded-full hover:bg-emerald-200"><IconEdit /></button><button onClick={() => deleteAgent(a.id)} className="text-rose-600 bg-rose-100 p-2 rounded-full hover:bg-rose-200"><IconTrash /></button></td></tr>)
               })}
             </tbody>
           </table>
@@ -1167,7 +1167,7 @@ export default function App() {
             </div>
 
             <div className="lg:col-span-3">
-              <label className="block text-sm mb-1 text-slate-600">هەڵبژاردنی ناو {purMode === 'debt' && <span className="text-black font-bold">*</span>}</label>
+              <label className="block text-sm mb-1 text-slate-600">هەڵبژاردنی ناو {purMode === 'debt' && <span className="text-rose-500 font-bold">*</span>}</label>
               {purEntityType === 'none' ? (
                  <input name="companyNameStr" placeholder="ناوی فرۆشیار بنووسە..." defaultValue={purToEdit ? purToEdit.companyName : ''} className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-900" />
               ) : (
@@ -2054,9 +2054,9 @@ export default function App() {
             <div id="tbl-item-perf" className="overflow-x-auto">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 min-w-[600px]">
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200"><p className="text-sm text-slate-500 mb-1">کۆی فرۆشراو (دانە)</p><h3 className="text-xl md:text-2xl font-bold text-slate-800">{itemPerf.tQty}</h3></div>
-                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200"><p className="text-sm text-emerald-800 mb-1">کۆی داهاتی فرۆشتن</p><h3 className="text-xl md:text-2xl font-bold text-emerald-900">${itemPerf.tSales.toFixed(2)}</h3></div>
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-200"><p className="text-sm text-blue-800 mb-1">کۆی داهاتی فرۆشتن</p><h3 className="text-xl md:text-2xl font-bold text-blue-900">${itemPerf.tSales.toFixed(2)}</h3></div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200"><p className="text-sm text-slate-500 mb-1">کۆی تێچووی کاڵاکان</p><h3 className="text-xl md:text-2xl font-bold text-slate-800">${itemPerf.tCost.toFixed(2)}</h3></div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200"><p className="text-sm text-slate-500 mb-1">پوختەی قازانج</p><h3 className={`text-xl md:text-2xl font-bold ${itemPerf.tProfit >= 0 ? 'text-emerald-600' : 'text-slate-900'}`}>${itemPerf.tProfit.toFixed(2)}</h3></div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200"><p className="text-sm text-slate-500 mb-1">پوختەی قازانج</p><h3 className={`text-xl md:text-2xl font-bold ${itemPerf.tProfit >= 0 ? 'text-blue-600' : 'text-slate-900'}`}>${itemPerf.tProfit.toFixed(2)}</h3></div>
               </div>
 
               <table className="w-full text-right border border-slate-200 text-sm min-w-[700px]">
@@ -2067,11 +2067,11 @@ export default function App() {
                     <tr key={`${r.id}-${r.itemName}`} className="border-b hover:bg-slate-50">
                       <td className="p-3 border text-slate-500" dir="ltr">{r.date}</td>
                       <td className="p-3 border font-medium text-slate-700">{r.saleType === 'cash' ? 'کاش' : (r.saleType.includes('credit') ? 'قەرز' : 'قیست')} | {r.receiptNo}</td>
-                      <td className="p-3 border font-bold text-emerald-900">{r.itemName}</td>
+                      <td className="p-3 border font-bold text-blue-900">{r.itemName}</td>
                       <td className="p-3 border">{r.qty}</td>
                       <td className="p-3 border text-slate-600">${r.avgCost.toFixed(2)}</td>
-                      <td className="p-3 border font-bold text-emerald-900">${r.price.toFixed(2)}</td>
-                      <td className={`p-3 border font-bold ${r.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>${r.profit.toFixed(2)}</td>
+                      <td className="p-3 border font-bold text-blue-900">${r.price.toFixed(2)}</td>
+                      <td className={`p-3 border font-bold ${r.profit >= 0 ? 'text-blue-600' : 'text-rose-600'}`}>${r.profit.toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -2111,10 +2111,10 @@ export default function App() {
         {reportTab === 'agents_all' && (
           <div className="bg-white rounded-xl shadow-sm p-4 border border-slate-200 overflow-x-auto">
             <button onClick={() => printTable('حسابی گشتی بریکارەکان', 'tbl-agents')} className="mb-4 bg-slate-100 px-4 py-2 rounded-lg flex gap-2 font-medium"><IconPrinter/> چاپکردن</button>
-            <table id="tbl-agents" className="w-full text-right border border-emerald-200 min-w-[600px]">
-              <thead className="bg-emerald-50 text-emerald-900"><tr><th className="p-3 border border-emerald-200">ناوی بریکار</th><th className="p-3 border border-emerald-200">مۆبایل</th><th className="p-3 border border-emerald-200">ناونیشان</th><th className="p-3 border border-emerald-200">کۆی قەرزی لایە</th></tr></thead>
+            <table id="tbl-agents" className="w-full text-right border border-blue-200 min-w-[600px]">
+              <thead className="bg-blue-50 text-blue-900"><tr><th className="p-3 border border-blue-200">ناوی بریکار</th><th className="p-3 border border-blue-200">مۆبایل</th><th className="p-3 border border-blue-200">ناونیشان</th><th className="p-3 border border-blue-200">کۆی قەرزی لایە</th></tr></thead>
               <tbody>
-                {agentsStatus.map(a => (<tr key={a.id} className="border-b border-emerald-100"><td className="p-3 border border-emerald-200 font-semibold">{a.name}</td><td className="p-3 border border-emerald-200">{a.phone}</td><td className="p-3 border border-emerald-200">${a.address}</td><td className="p-3 border border-emerald-200 text-orange-600 font-bold bg-orange-50/50">${a.debt.toFixed(2)}</td></tr>))}
+                {agentsStatus.map(a => (<tr key={a.id} className="border-b border-blue-100"><td className="p-3 border border-blue-200 font-semibold">{a.name}</td><td className="p-3 border border-blue-200">{a.phone}</td><td className="p-3 border border-blue-200">${a.address}</td><td className="p-3 border border-blue-200 text-orange-600 font-bold bg-orange-50/50">${a.debt.toFixed(2)}</td></tr>))}
               </tbody>
             </table>
           </div>
@@ -2134,21 +2134,21 @@ export default function App() {
 
         {reportTab === 'statement' && (
           <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-emerald-50 p-4 md:p-5 rounded-xl border border-emerald-100">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-4 md:p-5 rounded-xl border border-blue-100">
                <div>
-                  <label className="block text-sm mb-1 font-bold text-emerald-900">گەڕان (ناو، مۆبایل، ژ.پ)</label>
+                  <label className="block text-sm mb-1 font-bold text-blue-900">گەڕان (ناو، مۆبایل، ژ.پ)</label>
                   <div className="flex gap-2">
                     <input 
                       type="text"
                       value={statementFilter.name} 
                       onChange={e => setStatementFilter({...statementFilter, name: e.target.value})} 
                       placeholder="بگەڕێ..." 
-                      className="flex-1 border border-emerald-200 p-2.5 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-600 outline-none min-w-0"
+                      className="flex-1 border border-blue-200 p-2.5 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-orange-500 outline-none min-w-0"
                     />
                     <select 
                       value="" 
                       onChange={e => { if(e.target.value) setStatementFilter({...statementFilter, name: e.target.value}) }} 
-                      className="w-12 border border-emerald-200 rounded-lg bg-emerald-100 text-emerald-900 focus:ring-2 focus:ring-blue-600 cursor-pointer appearance-none text-center font-bold"
+                      className="w-12 border border-blue-200 rounded-lg bg-blue-100 text-blue-900 focus:ring-2 focus:ring-orange-500 cursor-pointer appearance-none text-center font-bold"
                       title="هەڵبژاردن لە لیستەوە"
                     >
                       <option value="" disabled>▼</option>
@@ -2158,15 +2158,15 @@ export default function App() {
                     </select>
                   </div>
                </div>
-               <div><label className="block text-sm mb-1 font-semibold text-slate-700">لە بەرواری</label><input type="date" value={statementFilter.dateFrom} onChange={e=>setStatementFilter({...statementFilter, dateFrom: e.target.value})} className="w-full border p-2.5 rounded-lg bg-white text-slate-900 outline-none focus:ring-2 focus:ring-blue-600" /></div>
-               <div><label className="block text-sm mb-1 font-semibold text-slate-700">بۆ بەرواری</label><input type="date" value={statementFilter.dateTo} onChange={e=>setStatementFilter({...statementFilter, dateTo: e.target.value})} className="w-full border p-2.5 rounded-lg bg-white text-slate-900 outline-none focus:ring-2 focus:ring-blue-600" /></div>
+               <div><label className="block text-sm mb-1 font-semibold text-slate-700">لە بەرواری</label><input type="date" value={statementFilter.dateFrom} onChange={e=>setStatementFilter({...statementFilter, dateFrom: e.target.value})} className="w-full border p-2.5 rounded-lg bg-white text-slate-900 outline-none focus:ring-2 focus:ring-orange-500" /></div>
+               <div><label className="block text-sm mb-1 font-semibold text-slate-700">بۆ بەرواری</label><input type="date" value={statementFilter.dateTo} onChange={e=>setStatementFilter({...statementFilter, dateTo: e.target.value})} className="w-full border p-2.5 rounded-lg bg-white text-slate-900 outline-none focus:ring-2 focus:ring-orange-500" /></div>
             </div>
             
             {statementResult.isResolved && (
               <div className="overflow-x-auto">
                 <button onClick={() => printTable(`کەشف حسابی: ${statementResult.name}`, 'print-statement-area')} className="mb-4 bg-slate-100 px-4 py-2 rounded-lg flex gap-2 font-medium hover:bg-slate-200 transition-colors"><IconPrinter/> چاپکردن</button>
                 <div id="print-statement-area">
-                  <div className="mb-4 text-center"><h3 className="text-xl font-bold text-slate-800">کەشف حسابی: <span className="text-blue-600">{statementResult.name}</span></h3></div>
+                  <div className="mb-4 text-center"><h3 className="text-xl font-bold text-slate-800">کەشف حسابی: <span className="text-orange-600">{statementResult.name}</span></h3></div>
                   <table className="w-full text-right border border-slate-200 text-sm min-w-[700px]">
                     <thead className="bg-slate-50"><tr><th className="p-3 border">ژ.پ</th><th className="p-3 border">بەروار</th><th className="p-3 border">جۆر</th><th className="p-3 border">وەسف و کاڵا</th><th className="p-3 border">قەرز (لەسەری)</th><th className="p-3 border">پێدان (پارەی دراو)</th><th className="p-3 border bg-blue-50">باڵانس (ماوە)</th></tr></thead>
                     <tbody>
