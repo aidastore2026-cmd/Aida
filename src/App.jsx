@@ -3,26 +3,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-// Chart.js components
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
-
-// Register ChartJS modules
-ChartJS.register(
-  CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler
-);
 
 // --- Constants & Config ---
 const DEFAULT_ADMIN_USER = 'ArkanA';
@@ -88,9 +68,9 @@ const THEMES = {
 const DOC_TYPES = ['کارتی نیشتمانی', 'کارتی زانیاری', 'پاسپۆرت', 'مۆڵەتی شۆفێری', 'کارت بانکی', 'ناسنامە'];
 
 const getFirebaseConfig = () => { try { if (typeof __firebase_config !== 'undefined') return JSON.parse(__firebase_config); } catch (e) {} return { apiKey:"AIzaSyBFPkNBvMcOOMc6Oam8nlrQWAOpCTOu0Bg", authDomain:"aidastore-2026.firebaseapp.com", projectId:"aidastore-2026", storageBucket:"aidastore-2026.firebasestorage.app", messagingSenderId:"1009068204406", appId:"1:1009068204406:web:f64cb19253296e4a391a57" }; };
-const app = initializeApp(getFirebaseConfig()); const auth = getAuth(app); const db = getFirestore(app); const storage = getStorage(app); const appId = typeof __app_id !== 'undefined' ? __app_id : 'sewastore-local-app';
+const app = initializeApp(getFirebaseConfig()); const auth = getAuth(app); const db = getFirestore(app); const appId = typeof __app_id !== 'undefined' ? __app_id : 'sewastore-local-app';
 
-// Base64 Image Compression Utility (Bypasses Storage issues)
+// Base64 Image Compression Utility
 const compressImage = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -107,7 +87,7 @@ const compressImage = (file) => {
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.6)); // Compressed base64
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
       };
       img.onerror = (err) => reject(err);
     };
@@ -547,6 +527,7 @@ export default function App() {
     await logAction(editingId ? `Upd Purchase: ${rNo}` : `New Purchase: ${rNo}`);
     setEditingId(null); setPurItems([{ id: Date.now(), itemName: '', qty: 1, unitPrice: '' }]);
     
+    // Only save Cash transactions to Safe (capitalTx), ignoring 'debt' completely
     if (paymentType === 'cash') {
        await addTransaction('purchase_cash', -totalPrice, `Purchase: ${newPurchase.companyName}`, newPurchase.id, note, null, rNo, selectedCurrency);
     }
@@ -612,6 +593,7 @@ export default function App() {
     await logAction(editingId ? `Upd Sale: ${rNo}` : `New Sale: ${rNo}`);
     setEditingId(null); setSaleItems([{ id: Date.now(), itemName: '', qty: 1, unitPrice: '' }]);
     
+    // Only saving Cash and Advance to Safe, completely ignoring Credit sales
     if (saleMode === 'installment' && newSale.advance > 0) await addTransaction('sale_advance', newSale.advance, `Adv: ${newSale.customerName}`, newSale.id, note, null, rNo, selectedCurrency);
     else if (saleMode === 'cash') await addTransaction('sale_cash', totalPrice, `Cash Sale: ${newSale.customerName}`, newSale.id, note, null, rNo, selectedCurrency);
     form.reset();
@@ -710,52 +692,24 @@ export default function App() {
     const totalAgentDebt = agents.reduce((acc, a) => acc + getAgentDebt(a.id, settings.currency), 0);
     const totalCompanyDebt = companies.reduce((acc, c) => acc + getCompanyDebt(c.id, settings.currency), 0);
 
-    const chartData = {
-        labels: [t('c_box'), t('t_sal'), t('d_m_dbt'), t('a_dbt'), t('c_ops')],
-        datasets: [
-            {
-                label: `ئامارەکانی ${currentCurrency.name}`,
-                data: [currentCapital[settings.currency] || 0, totalSales, totalDebtInMarket, totalAgentDebt, totalCompanyDebt],
-                backgroundColor: [
-                    'rgba(59, 130, 246, 0.6)',
-                    'rgba(16, 185, 129, 0.6)',
-                    'rgba(245, 158, 11, 0.6)',
-                    'rgba(239, 68, 68, 0.6)',
-                    'rgba(139, 92, 246, 0.6)'
-                ],
-                borderColor: [
-                    'rgba(59, 130, 246, 1)',
-                    'rgba(16, 185, 129, 1)',
-                    'rgba(245, 158, 11, 1)',
-                    'rgba(239, 68, 68, 1)',
-                    'rgba(139, 92, 246, 1)'
-                ],
-                borderWidth: 1,
-            },
-        ],
-    };
+    const chartData = [
+      { label: t('c_box'), value: currentCapital[settings.currency] || 0, color: 'bg-blue-500' },
+      { label: t('t_sal'), value: totalSales, color: 'bg-emerald-500' },
+      { label: t('d_m_dbt'), value: totalDebtInMarket, color: 'bg-amber-500' },
+      { label: t('a_dbt'), value: totalAgentDebt, color: 'bg-rose-500' },
+      { label: t('c_ops'), value: totalCompanyDebt, color: 'bg-purple-500' }
+    ];
+    const maxSummaryValue = Math.max(...chartData.map(d => d.value), 1);
 
-    const lineChartData = {
-      labels: [...Array(7)].map((_, i) => {
+    const lineChartData = [...Array(7)].map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
-        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-      }),
-      datasets: [
-        {
-          label: 'فرۆشتنی ڕۆژانە',
-          data: [...Array(7)].map((_, i) => {
-            const d = new Date();
-            d.setDate(d.getDate() - (6 - i));
-            const dateStr = d.toISOString().split('T')[0];
-            return sales.filter(s => s.date === dateStr && s.currency === settings.currency).reduce((sum, s) => sum + s.price, 0);
-          }),
-          borderColor: 'rgb(59, 130, 246)',
-          backgroundColor: 'rgba(59, 130, 246, 0.5)',
-          tension: 0.4
-        }
-      ]
-    };
+        const dateStr = d.toISOString().split('T')[0];
+        const displayDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        const val = sales.filter(s => s.date === dateStr && s.currency === settings.currency).reduce((sum, s) => sum + s.price, 0);
+        return { label: displayDate, value: val };
+    });
+    const maxLineValue = Math.max(...lineChartData.map(d => d.value), 1);
 
     return (
       <div className="space-y-6"><h2 className="text-2xl font-bold text-slate-800">{t('m_dashboard')} ({currentCurrency.name})</h2>
@@ -768,18 +722,40 @@ export default function App() {
           <div className={`${currentTheme.main} text-white p-5 md:p-6 rounded-xl shadow-lg flex items-center justify-between opacity-90`}><div><p className="opacity-80 mb-1 font-medium text-sm md:text-base">{t('a_dbt')}</p><h3 className="text-xl md:text-2xl font-bold">{formatMoney(totalAgentDebt)}</h3></div><IconAgent size={32} className="opacity-80" /></div>
         </div>
 
-        {/* Charts Section */}
+        {/* Custom UI Charts without external dependencies */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">پوختەی دارایی گشتی</h3>
-                <div className="h-[300px] flex justify-center">
-                    <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
+                <div className="h-[250px] flex items-end gap-2 sm:gap-4 pt-6 border-b border-slate-200 pb-2">
+                   {chartData.map((item, idx) => {
+                      const heightPct = Math.max((item.value / maxSummaryValue) * 100, 2);
+                      return (
+                         <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                            <div className="absolute -top-8 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                                {formatMoney(item.value)}
+                            </div>
+                            <div className={`w-full rounded-t-md ${item.color} transition-all duration-500 opacity-80 hover:opacity-100 cursor-pointer`} style={{ height: `${heightPct}%` }}></div>
+                            <div className="text-[10px] sm:text-xs text-center mt-2 text-slate-600 font-medium truncate w-full" title={item.label}>{item.label}</div>
+                         </div>
+                      )
+                   })}
                 </div>
             </div>
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">جوڵەی فرۆشتنی ٧ ڕۆژی ڕابردوو</h3>
-                <div className="h-[300px] flex justify-center">
-                    <Line data={lineChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+                <div className="h-[250px] flex items-end gap-2 sm:gap-4 pt-6 border-b border-slate-200 pb-2">
+                   {lineChartData.map((item, idx) => {
+                      const heightPct = Math.max((item.value / maxLineValue) * 100, 2);
+                      return (
+                         <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                            <div className="absolute -top-8 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                                {formatMoney(item.value)}
+                            </div>
+                            <div className={`w-full rounded-t-md bg-blue-500 transition-all duration-500 opacity-80 hover:opacity-100 cursor-pointer`} style={{ height: `${heightPct}%` }}></div>
+                            <div className="text-[10px] sm:text-xs text-center mt-2 text-slate-600 font-medium truncate w-full whitespace-nowrap" dir="ltr" title={item.label}>{item.label}</div>
+                         </div>
+                      )
+                   })}
                 </div>
             </div>
         </div>
@@ -1022,7 +998,7 @@ export default function App() {
                    <div key={item.id} className="flex flex-col sm:flex-row gap-3 sm:items-end p-3 sm:p-0 border sm:border-0 rounded-lg sm:rounded-none bg-white sm:bg-transparent">
                        <div className="flex-1"><label className="block text-xs mb-1 text-slate-600">{t('i_nam')}</label><select required value={item.itemName} onChange={(e) => updateSaleItem(item.id, 'itemName', e.target.value)} className={inpCls}><option value="">{t('sel_from_inv')}</option>{inventory.map(i => <option key={i.itemName} value={i.itemName}>{i.itemName} ({i.currentQty} {i.currency})</option>)}</select></div>
                        <div className="flex gap-3"><div className="w-full sm:w-24"><label className="block text-xs mb-1 text-slate-600">{t('qty')}</label><input required type="number" step="any" value={item.qty} onChange={(e) => updateSaleItem(item.id, 'qty', e.target.value)} className={inpCls} /></div><div className="w-full sm:w-32"><label className="block text-xs mb-1 text-slate-600">{t('u_prc')}</label><input required type="number" step="any" value={item.unitPrice} onChange={(e) => updateSaleItem(item.id, 'unitPrice', e.target.value)} className={inpCls} /></div></div>
-                       {saleItems.length > 1 && (<button type="button" onClick={() => removeSaleItem(item.id)} className="p-2.5 mt-2 sm:mt-0 w-full sm:w-auto bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition-colors flex justify-center items-center gap-1"><IconTrash/></button>)}
+                       {saleItems.length > 1 && (<button type="button" onClick={() => removeSaleItem(item.id)} className="p-2.5 mt-2 sm:mt-0 w-full sm:w-auto bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition-colors flex justify-center items-center gap-1"><IconTrash/> <span className="sm:hidden">سڕینەوە</span></button>)}
                    </div>
                ))}
                <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4"><button type="button" onClick={addSaleItem} className={`w-full sm:w-auto text-sm font-bold ${currentTheme.text} bg-white px-4 py-2.5 rounded-lg shadow-sm border border-slate-200`}>{t('a_itm')}</button><div className={`text-left font-black text-xl ${currentTheme.text} bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm`} dir="ltr">{t('tot')}: {saleItems.reduce((sum, item) => sum + (Number(item.qty) * Number(item.unitPrice)), 0).toFixed(2)}</div></div>
@@ -1328,7 +1304,7 @@ export default function App() {
         </nav>
         <div className="p-4 border-t border-white/10">
            <div className="flex items-center gap-3 text-slate-300 mb-3"><div className="bg-white/10 p-2 rounded-full"><IconUser /></div><div><p className="text-xs text-white/50">{t('lgi')}</p><p className={`font-bold text-sm ${currentTheme.iconText}`} dir="ltr">{loggedAppUser?.username}</p></div></div>
-           <button onClick={() => {setIsLogged(false); setLoggedAppUser(null); setLoginForm({user:'', pass:''}); setIsMobileMenuOpen(false); logAction('Logout'); }} className="w-full bg-rose-500/10 text-rose-400 py-2 rounded-lg text-sm border border-rose-500/20">{t('lgo')}</button>
+           <button onClick={() => {setIsLogged(false); setLoggedAppUser(null); setLoginForm({user:'', pass:''}); setIsMobileMenuOpen(false); logAction('Logout'); }} className="w-full bg-rose-500/10 text-rose-400 py-2 rounded-lg text-sm border border-rose-500/20 transition-colors">{t('lgo')}</button>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full">
