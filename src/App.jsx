@@ -259,6 +259,27 @@ export default function App() {
     document.documentElement.setAttribute('lang', settings.language.toLowerCase());
   }, [settings.language]);
 
+  // Inject logic for adding icon meta tags for homescreen shortcuts dynamically
+  useEffect(() => {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = STORE_LOGO;
+
+    let appleLink = document.querySelector("link[rel~='apple-touch-icon']");
+    if (!appleLink) {
+      appleLink = document.createElement('link');
+      appleLink.rel = 'apple-touch-icon';
+      document.getElementsByTagName('head')[0].appendChild(appleLink);
+    }
+    appleLink.href = STORE_LOGO;
+
+    document.title = STORE_NAME;
+  }, []);
+
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -1001,7 +1022,7 @@ export default function App() {
                    <div key={item.id} className="flex flex-col sm:flex-row gap-3 sm:items-end p-3 sm:p-0 border sm:border-0 rounded-lg sm:rounded-none bg-white sm:bg-transparent">
                        <div className="flex-1"><label className="block text-xs mb-1 text-slate-600">{t('i_nam')}</label><select required value={item.itemName} onChange={(e) => updateSaleItem(item.id, 'itemName', e.target.value)} className={inpCls}><option value="">{t('sel_from_inv')}</option>{inventory.map(i => <option key={i.itemName} value={i.itemName}>{i.itemName} ({i.currentQty} {i.currency})</option>)}</select></div>
                        <div className="flex gap-3"><div className="w-full sm:w-24"><label className="block text-xs mb-1 text-slate-600">{t('qty')}</label><input required type="number" step="any" value={item.qty} onChange={(e) => updateSaleItem(item.id, 'qty', e.target.value)} className={inpCls} /></div><div className="w-full sm:w-32"><label className="block text-xs mb-1 text-slate-600">{t('u_prc')}</label><input required type="number" step="any" value={item.unitPrice} onChange={(e) => updateSaleItem(item.id, 'unitPrice', e.target.value)} className={inpCls} /></div></div>
-                       {saleItems.length > 1 && (<button type="button" onClick={() => removeSaleItem(item.id)} className="p-2.5 mt-2 sm:mt-0 w-full sm:w-auto bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition-colors flex justify-center items-center gap-1"><IconTrash/> <span className="sm:hidden">سڕینەوە</span></button>)}
+                       {saleItems.length > 1 && (<button type="button" onClick={() => removeSaleItem(item.id)} className="p-2.5 mt-2 sm:mt-0 w-full sm:w-auto bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition-colors flex justify-center items-center gap-1"><IconTrash/></button>)}
                    </div>
                ))}
                <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4"><button type="button" onClick={addSaleItem} className={`w-full sm:w-auto text-sm font-bold ${currentTheme.text} bg-white px-4 py-2.5 rounded-lg shadow-sm border border-slate-200`}>{t('a_itm')}</button><div className={`text-left font-black text-xl ${currentTheme.text} bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm`} dir="ltr">{t('tot')}: {saleItems.reduce((sum, item) => sum + (Number(item.qty) * Number(item.unitPrice)), 0).toFixed(2)}</div></div>
