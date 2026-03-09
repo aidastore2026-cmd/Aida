@@ -1279,33 +1279,48 @@ export default function App() {
 
   return (
     <div className={`flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden ${settings.fontSize}`} dir={LANGUAGES[settings.language]?.dir || 'rtl'} style={{fontFamily: "'Calibri', sans-serif"}}>
-      <div className={`${currentTheme.sidebar} text-white p-4 flex justify-between items-center shadow-md z-[60] md:hidden sticky top-0`}>
+      
+      {/* Mobile Top Bar */}
+      <div className={`${currentTheme.sidebar} text-white p-4 flex justify-between items-center shadow-md z-[40] md:hidden sticky top-0`}>
         <div className="flex items-center gap-3"><h1 className={`text-lg font-black ${currentTheme.iconText}`}>{STORE_NAME}</h1></div>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`p-2 ${currentTheme.sidebarHover} rounded-lg`}><IconMenu /></button>
+        <button onClick={() => setIsMobileMenuOpen(true)} className={`p-2 ${currentTheme.sidebarHover} rounded-lg`}><IconMenu /></button>
       </div>
-      {isMobileMenuOpen && <div className="md:hidden fixed inset-0 bg-slate-900/60 z-[70]" onClick={() => setIsMobileMenuOpen(false)}></div>}
-      <div className={`fixed inset-y-0 right-0 transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-full md:w-64 ${currentTheme.sidebar} text-white flex flex-col shadow-2xl z-[80] ${currentTheme.border}`}>
-        <div className="p-6 text-center border-b border-white/10 relative">
-          <button onClick={() => setIsMobileMenuOpen(false)} className={`md:hidden absolute top-4 left-4 text-white/50 hover:text-white`}><IconX /></button>
+      
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && <div className="md:hidden fixed inset-0 bg-slate-900/60 z-[90]" onClick={() => setIsMobileMenuOpen(false)}></div>}
+      
+      {/* Sidebar Menu (Mobile & Desktop) */}
+      <div className={`fixed inset-y-0 right-0 transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-full sm:w-80 md:w-64 ${currentTheme.sidebar} text-white flex flex-col shadow-2xl z-[100] ${currentTheme.border}`}>
+        
+        {/* Close Button for Mobile */}
+        <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden absolute top-4 left-4 p-2 bg-white/10 hover:bg-rose-500 rounded-full text-white transition-colors z-[110]">
+           <IconX />
+        </button>
+
+        <div className="p-6 text-center border-b border-white/10 relative mt-8 md:mt-0">
           <div className="mb-4">{STORE_LOGO ? <img src={STORE_LOGO} alt="Logo" className="w-24 h-24 mx-auto object-contain bg-white/5 p-2 rounded-2xl" /> : <div className="w-24 h-24 mx-auto bg-white/10 rounded-2xl flex items-center justify-center"><IconHome size={40} /></div>}</div>
           <h1 className={`text-2xl font-black ${currentTheme.iconText}`}>{STORE_NAME}</h1>
         </div>
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto mt-2 text-sm md:text-base">
+        
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto mt-2 text-base md:text-base">
           {MODULES_LIST.filter(m => hasPermission(m.id)).map(item => {
              const IconComponent = item.ic;
              if(item.id === 'inventory_print_price' || item.id === 'installment_ops') return null;
 
              return (
-              <button key={item.id} onClick={() => { setView(item.id); setEditingId(null); setEditingPaymentId(null); setViewingInstallments(null); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold ${view === item.id ? `${currentTheme.main} text-white shadow-md` : `text-slate-300 ${currentTheme.sidebarHover}`}`}><span className={view === item.id ? 'text-white' : currentTheme.iconText}><IconComponent /></span> <span>{t(item.k)}</span></button>
+              <button key={item.id} onClick={() => { setView(item.id); setEditingId(null); setEditingPaymentId(null); setViewingInstallments(null); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold ${view === item.id ? `${currentTheme.main} text-white shadow-md` : `text-slate-300 ${currentTheme.sidebarHover}`}`}><span className={view === item.id ? 'text-white' : currentTheme.iconText}><IconComponent /></span> <span>{t(item.k)}</span></button>
              )
           })}
         </nav>
+        
         <div className="p-4 border-t border-white/10">
            <div className="flex items-center gap-3 text-slate-300 mb-3"><div className="bg-white/10 p-2 rounded-full"><IconUser /></div><div><p className="text-xs text-white/50">{t('lgi')}</p><p className={`font-bold text-sm ${currentTheme.iconText}`} dir="ltr">{loggedAppUser?.username}</p></div></div>
-           <button onClick={() => {setIsLogged(false); setLoggedAppUser(null); setLoginForm({user:'', pass:''}); setIsMobileMenuOpen(false); logAction('Logout'); }} className="w-full bg-rose-500/10 text-rose-400 py-2 rounded-lg text-sm border border-rose-500/20 transition-colors">{t('lgo')}</button>
+           <button onClick={() => {setIsLogged(false); setLoggedAppUser(null); setLoginForm({user:'', pass:''}); setIsMobileMenuOpen(false); logAction('Logout'); }} className="w-full bg-rose-500/10 text-rose-400 py-3 rounded-lg text-sm border border-rose-500/20 font-bold transition-colors hover:bg-rose-500 hover:text-white">{t('lgo')}</button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full z-10">
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full z-10 relative">
         <div className="max-w-6xl mx-auto pb-20 md:pb-0">
           {view === 'dashboard' && hasPermission('dashboard') && renderDashboard()}
           {view === 'items' && hasPermission('items') && renderDefinedItems()}
@@ -1323,6 +1338,7 @@ export default function App() {
         </div>
       </div>
       
+      {/* Modals */}
       {viewingDocuments && (
         <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[90] p-4">
           <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full border border-slate-200">
