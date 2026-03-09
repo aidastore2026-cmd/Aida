@@ -1284,7 +1284,7 @@ export default function App() {
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`p-2 ${currentTheme.sidebarHover} rounded-lg`}><IconMenu /></button>
       </div>
       {isMobileMenuOpen && <div className="md:hidden fixed inset-0 bg-slate-900/60 z-[70]" onClick={() => setIsMobileMenuOpen(false)}></div>}
-      <div className={`fixed inset-y-0 right-0 transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 ${currentTheme.sidebar} text-white flex flex-col shadow-2xl z-[80] ${currentTheme.border}`}>
+      <div className={`fixed inset-y-0 right-0 transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-full md:w-64 ${currentTheme.sidebar} text-white flex flex-col shadow-2xl z-[80] ${currentTheme.border}`}>
         <div className="p-6 text-center border-b border-white/10 relative">
           <button onClick={() => setIsMobileMenuOpen(false)} className={`md:hidden absolute top-4 left-4 text-white/50 hover:text-white`}><IconX /></button>
           <div className="mb-4">{STORE_LOGO ? <img src={STORE_LOGO} alt="Logo" className="w-24 h-24 mx-auto object-contain bg-white/5 p-2 rounded-2xl" /> : <div className="w-24 h-24 mx-auto bg-white/10 rounded-2xl flex items-center justify-center"><IconHome size={40} /></div>}</div>
