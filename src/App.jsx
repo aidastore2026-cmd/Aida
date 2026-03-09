@@ -691,16 +691,16 @@ export default function App() {
     const totalAgentDebt = agents.reduce((acc, a) => acc + getAgentDebt(a.id, settings.currency), 0);
     const totalCompanyDebt = companies.reduce((acc, c) => acc + getCompanyDebt(c.id, settings.currency), 0);
 
-    const chartData = [
+    const summaryData = [
       { label: t('c_box'), value: currentCapital[settings.currency] || 0, color: 'bg-blue-500' },
       { label: t('t_sal'), value: totalSales, color: 'bg-emerald-500' },
       { label: t('d_m_dbt'), value: totalDebtInMarket, color: 'bg-amber-500' },
       { label: t('a_dbt'), value: totalAgentDebt, color: 'bg-rose-500' },
       { label: t('c_ops'), value: totalCompanyDebt, color: 'bg-purple-500' }
     ];
-    const maxSummaryValue = Math.max(...chartData.map(d => d.value), 1);
+    const maxSummaryValue = Math.max(...summaryData.map(d => d.value), 1);
 
-    const lineChartData = [...Array(7)].map((_, i) => {
+    const last7DaysData = [...Array(7)].map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
         const dateStr = d.toISOString().split('T')[0];
@@ -708,7 +708,7 @@ export default function App() {
         const val = sales.filter(s => s.date === dateStr && s.currency === settings.currency).reduce((sum, s) => sum + s.price, 0);
         return { label: displayDate, value: val };
     });
-    const maxLineValue = Math.max(...lineChartData.map(d => d.value), 1);
+    const maxLineValue = Math.max(...last7DaysData.map(d => d.value), 1);
 
     return (
       <div className="space-y-6"><h2 className="text-2xl font-bold text-slate-800">{t('m_dashboard')} ({currentCurrency.name})</h2>
@@ -721,12 +721,11 @@ export default function App() {
           <div className={`${currentTheme.main} text-white p-5 md:p-6 rounded-xl shadow-lg flex items-center justify-between opacity-90`}><div><p className="opacity-80 mb-1 font-medium text-sm md:text-base">{t('a_dbt')}</p><h3 className="text-xl md:text-2xl font-bold">{formatMoney(totalAgentDebt)}</h3></div><IconAgent size={32} className="opacity-80" /></div>
         </div>
 
-        {/* Custom UI Charts without external dependencies */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">پوختەی دارایی گشتی</h3>
                 <div className="h-[250px] flex items-end gap-2 sm:gap-4 pt-6 border-b border-slate-200 pb-2">
-                   {chartData.map((item, idx) => {
+                   {summaryData.map((item, idx) => {
                       const heightPct = Math.max((item.value / maxSummaryValue) * 100, 2);
                       return (
                          <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
@@ -743,7 +742,7 @@ export default function App() {
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">جوڵەی فرۆشتنی ٧ ڕۆژی ڕابردوو</h3>
                 <div className="h-[250px] flex items-end gap-2 sm:gap-4 pt-6 border-b border-slate-200 pb-2">
-                   {lineChartData.map((item, idx) => {
+                   {last7DaysData.map((item, idx) => {
                       const heightPct = Math.max((item.value / maxLineValue) * 100, 2);
                       return (
                          <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
